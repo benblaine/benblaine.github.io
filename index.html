@@ -63,26 +63,39 @@
         }
         
         class Snake {
-            constructor() {
-                this.x = 0;
-                this.y = 0;
-                this.xSpeed = scale;
-                this.ySpeed = 0;
-                this.tail = [];
-                this.total = 0;
-            }
-
-            draw() {
-    ctx.fillStyle = '#FFF';
-
-    for (let i = 0; i < this.tail.length; i++) {
-        ctx.fillRect(this.tail[i].x, this.tail[i].y, scale, scale);
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.xSpeed = scale;
+        this.ySpeed = 0;
+        this.tail = [];
+        this.total = 0;
+        this.emojis = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🍍', '🥥', '🥝'];
     }
 
-    // Draw the snake emoji as the snake's head
-    ctx.font = `${scale}px sans-serif`;
-    ctx.fillText('🐍', this.x, this.y + scale);
+    getRandomEmoji() {
+        return this.emojis[Math.floor(Math.random() * this.emojis.length)];
+    }
+
+    draw() {
+        ctx.fillStyle = '#FFF';
+
+        for (let i = 0; i < this.tail.length; i++) {
+            if (!this.tail[i].emoji) {
+                this.tail[i].emoji = this.getRandomEmoji();
+            }
+            ctx.font = `${scale}px sans-serif`;
+            ctx.fillText(this.tail[i].emoji, this.tail[i].x, this.tail[i].y + scale);
+        }
+
+        // Draw the snake emoji as the snake's head
+        ctx.font = `${scale}px sans-serif`;
+        ctx.fillText('🐍', this.x, this.y + scale);
+    }
+
+    // ... rest of the Snake class remains unchanged
 }
+
 
 
             update() {
