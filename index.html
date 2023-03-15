@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐍 SNAKE DAD! 🍒</title>
+    <title>🐍 SNAKE DAD!🍒</title>
     <style>
         canvas {
             display: block;
@@ -20,6 +20,54 @@
 
     
     <script>
+
+    const explosions = [];
+    let explosionDuration = 0;
+
+    let gameLoop;
+    const initialInterval = 400;
+    let currentInterval = initialInterval;
+
+    async function gameLoopFunction() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        snake.update();
+        snake.draw();
+        fruit.draw();
+
+        // Update explosion emojis
+            if (explosionDuration > 0) {
+                    for (let i = 0; i < 5; i++) {
+                        createExplosion();
+                    }
+
+                    explosions.forEach((explosion, index) => {
+                    ctx.font = `20px sans-serif`;
+                    ctx.fillText(explosion.emoji, explosion.x, explosion.y);
+
+                    explosion.x += explosion.vx;
+                    explosion.y += explosion.vy;
+                    explosion.vy += 0.1; // Gravity
+
+                    if (explosion.y > canvas.height) {
+                        explosions.splice(index, 1);
+                    }
+                });
+
+                explosionDuration--;
+            }
+        }
+
+
+    function createExplosion() {
+        const explosion = {
+            x: Math.random() * canvas.width,
+            y: 0,
+            vx: (Math.random() * 2 - 1) * 2, // Horizontal velocity (-2 to 2)
+            vy: Math.random() * 3 + 1, // Vertical velocity (1 to 4)
+            emoji: '💥',
+        };
+        explosions.push(explosion);
+    }
 
     async function fetchDadJoke() {
         try {
@@ -83,35 +131,35 @@
         }
         
         class Snake {
-        constructor() {
-            this.x = 0;
-            this.y = 0;
-            this.xSpeed = scale;
-            this.ySpeed = 0;
-            this.tail = [];
-            this.total = 0;
-            this.emojis = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🍍', '🥥', '🥝'];
-        }
-
-        getRandomEmoji() {
-            return this.emojis[Math.floor(Math.random() * this.emojis.length)];
-        }
-
-        draw() {
-            ctx.fillStyle = '#FFF';
-
-            for (let i = 0; i < this.tail.length; i++) {
-                if (!this.tail[i].emoji) {
-                    this.tail[i].emoji = this.getRandomEmoji();
-                }
-                ctx.font = `${scale}px sans-serif`;
-                ctx.fillText(this.tail[i].emoji, this.tail[i].x, this.tail[i].y + scale);
+            constructor() {
+                this.x = 0;
+                this.y = 0;
+                this.xSpeed = scale;
+                this.ySpeed = 0;
+                this.tail = [];
+                this.total = 0;
+                this.emojis = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🍍', '🥥', '🥝'];
             }
 
-            // Draw the snake emoji as the snake's head
-            ctx.font = `${scale}px sans-serif`;
-            ctx.fillText('🐍', this.x, this.y + scale);
-        }
+            getRandomEmoji() {
+                return this.emojis[Math.floor(Math.random() * this.emojis.length)];
+            }
+
+            draw() {
+                ctx.fillStyle = '#FFF';
+
+                for (let i = 0; i < this.tail.length; i++) {
+                    if (!this.tail[i].emoji) {
+                        this.tail[i].emoji = this.getRandomEmoji();
+                    }
+                    ctx.font = `${scale}px sans-serif`;
+                    ctx.fillText(this.tail[i].emoji, this.tail[i].x, this.tail[i].y + scale);
+                }
+
+                // Draw the snake emoji as the snake's head
+                ctx.font = `${scale}px sans-serif`;
+                ctx.fillText('🐍', this.x, this.y + scale);
+            }
 
 
 
@@ -166,21 +214,33 @@
             }
 
             eat(fruit) {
-                if (this.x === fruit.x && this.y === fruit.y) {
+                const nextX = this.x + this.xSpeed;
+                const nextY = this.y + this.ySpeed;
+
+                const xCollision = (this.x <= fruit.x && nextX >= fruit.x) || (this.x >= fruit.x && nextX <= fruit.x);
+                const yCollision = (this.y <= fruit.y && nextY >= fruit.y) || (this.y >= fruit.y && nextY <= fruit.y);
+
+                if (xCollision && yCollision) {
                     this.total++;
                     return true;
                 }
                 return false;
             }
 
+
+
             checkCollision() {
                 for (let i = 0; i < this.tail.length; i++) {
                     if (this.x === this.tail[i].x && this.y === this.tail[i].y) {
-                        this.total = 0;
-                        this.tail = [];
+                    this.total = 0;
+                    this.tail = [];
+
+                    // Trigger the explosion
+                    explosionDuration = 150; // Adjust the duration as needed (measured in game loop iterations)
                     }
                 }
             }
+
         }
 
         class Fruit {
@@ -191,10 +251,11 @@
             }
 
             pickLocation() {
-                this.x = (Math.floor(Math.random() * columns - 1) + 1) * scale;
-                this.y = (Math.floor(Math.random() * rows - 1) + 1) * scale;
+                this.x = Math.floor(Math.random() * columns) * scale;
+                this.y = Math.floor(Math.random() * rows) * scale;
                 this.emoji = snake.getRandomEmoji();
             }
+
 
             draw() {
                 ctx.font = `${scale}px sans-serif`;
@@ -233,7 +294,9 @@
         // Add touch event listeners
         canvas.addEventListener('touchstart', handleTouchStart, false);
         canvas.addEventListener('touchmove', handleTouchMove, false);
+       
         
+        gameLoop = window.setInterval(gameLoopFunction, currentInterval);
     </script>
 </body>
 </html>
