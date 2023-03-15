@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -187,18 +188,21 @@
             constructor() {
                 this.x = 0;
                 this.y = 0;
+                this.emoji = snake.getRandomEmoji();
             }
 
             pickLocation() {
-                this.x = Math.floor(Math.random() * columns) * scale;
-                this.y = Math.floor(Math.random() * rows) * scale;
+                this.x = (Math.floor(Math.random() * columns - 1) + 1) * scale;
+                this.y = (Math.floor(Math.random() * rows - 1) + 1) * scale;
+                this.emoji = snake.getRandomEmoji();
             }
 
             draw() {
-                ctx.fillStyle = 'red';
-                ctx.fillRect(this.x, this.y, scale, scale);
+                ctx.font = `${scale}px sans-serif`;
+                ctx.fillText(this.emoji, this.x, this.y + scale);
             }
         }
+
 
         const snake = new Snake();
         const fruit = new Fruit();
